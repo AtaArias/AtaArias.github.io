@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang='en'>
+
+<head>
+  <meta charset='utf-8' />
+  <title>V1 carga de informacion PITSA</title>
+  <meta name='viewport' content='width=device-width, initial-scale=1' />
+  <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v2.9.2/mapbox-gl.js'></script>
+  <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v2.9.2/mapbox-gl.css' rel='stylesheet' />
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    #map {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 100%;
+    }
+
+    .legend {
+      max-width: 275px;
+      width: 100%;
+      background-color: #ffffff87;
+      border-radius: 5px;
+      bottom: 30px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+      font: 12px/20px "Helvetica Neue", Arial, Helvetica, sans-serif;
+      padding: 10px;
+      margin: 10px;
+      position: absolute;
+      right: 0;
+
+      z-index: 1;
+    }
+
+
+/**/
+    @media screen and (max-width:420px) {
+
+
+      .contenedor {
+
+     padding: 15px 0;
+      }
+
+      .map-overlay h3 {
+        font-size: 13px;
+      }
+
+    }
+
+
+    @media screen and (max-width:376px) {
+
+      #myPieChart {
+        width: 174px !important;
+        height: 185px !important;
+      }
+
+    
+      .legend{
+        width: inherit;
+      }
+   
+
+    }
+
+    .legend h2 {
+      margin: 0 0 10px;
+    }
+
+    .legend div span {
+      border-radius: 13%;
+      display: inline-block;
+      height: 3px;
+      margin-right: 5px;
+      width: 20px;
+    }
+
+    .legend1 div span {
+      border-radius: 13%;
+      display: inline-block;
+      height: 5px;
+      margin-right: 5px;
+      width: 20px;
+    }
+
+    .legend2 div span {
+      border-radius: 25%;
+      display: inline-block;
+      height: 10px;
+      margin-right: 10px;
+      width: 40px;
+    }
+
+    #menu {
+      background: #fff;
+      position: absolute;
+      z-index: 1;
+      border-radius: 3px;
+      width: 120px;
+      border: 1px solid rgba(0, 0, 0, 0.4);
+      font-family: "Arial", sans-serif;
+      position: absolute;
+      bottom: 30px;
+      left: 10px;
+      z-index: 1;
+    }
+
+    #menu a {
+      font-size: 13px;
+      color: #404040;
+      display: block;
+      margin: 0;
+      padding: 0;
+      padding: 10px;
+      text-decoration: none;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.25);
+      text-align: center;
+    }
+
+    #menu a:last-child {
+      border: none;
+    }
+
+    #menu a:hover {
+      background-color: #f8f8f8;
+      color: #404040;
+    }
+
+    #menu a.active {
+      background-color: #3887be;
+      color: #ffffff;
+    }
+
+    #menu a.active:hover {
+      background: #3074a4;
+    }
+
+    h2,
+    h3 {
+      margin: 15px;
+      font-size: 1.8em;
+    }
+
+    p {
+      font-size: 1.1em;
+      margin: 10px;
+      text-align: left;
+    }
+
+    #features {
+      top: 0px;
+      left: 12px;
+
+    }
+
+    .map-overlay {
+      position: absolute;
+
+      background: rgba(255, 255, 255, 0.5);
+      margin-right: 20px;
+      font-family: Arial, sans-serif;
+      overflow: auto;
+      border-radius: 3px;
+    }
+
+    #title {
+      font-weight: 700;
+      font-size: 1rem;
+    }
+
+    #legend h2 {
+      margin: 0;
+      padding: 0;
+    }
+
+    #infoContainer {
+      font-size: 16px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+  <div id='map'></div>
+  <!------------------------------------->
+
+  <div class="map-overlay" id="features">
+
+    <h3>Cartografía Socioambiental</h3>
+    <!--
+    <div id="pd">
+    </div>
+    -->
+  </div>
+  <!------------------------------------->
+
+  <div id="legend" class="legend">
+    <div style="display: flex; align-items: center; justify-content: center; ">
+      <div id="title">BIENES AFECTADOS</div>
+    </div>
+
+
+    <div class="contenedor">
+      <canvas id="myPieChart"></canvas>
+
+      <div id="infoContainer"></div>
+    </div>
+
+  </div>
+
+
+
+
+
+
+
+
+  <!------------------------------------->
+
+  <!-- Charts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script>
+    // Agrega los controles de navegación
+    // The value for 'accessToken' begins with 'pk...'
+    mapboxgl.accessToken =
+      "pk.eyJ1IjoiZ2VvY2FzdGVsbGFub3NnIiwiYSI6ImNrbHNjOGF5azAydnoydnBpMXR0eTNnMDAifQ.bfvHzRUChGqTE7iORzaIJA";
+    const map = new mapboxgl.Map({
+      container: "map",
+      style: "mapbox://styles/geocastellanosg/cleoe3aag000a01p765jkv41p/draft",
+      center: [-66.104, -34.001],
+      zoom: 6.7,
+      minZoom: 6.5
+    });
+
+    // Traer datos para la gráfica
+    // ----------------------------- //
+
+    function bajarDatos() {
+      const layerNames = ['kobopoint'];
+      const contadorCategorias = {
+        SOCIEDAD: 0,
+        SUELO: 0,
+        AGUA: 0,
+        BIODIVERSIDAD: 0,
+        AIRE: 0,
+        OTRO: 0,
+        total: function () { return (this.SOCIEDAD + this.SUELO + this.AGUA + this.BIODIVERSIDAD + this.AIRE) },
+      };
+
+      layerNames.forEach((a) => {
+        const features = map.queryRenderedFeatures({ layers: [a] });
+
+        features.forEach((feature) => {
+          const valor = feature.properties.Qué_se_Af;
+          const key = valor.trim().toUpperCase();
+
+          let count = contadorCategorias[key];
+          if (count != null) contadorCategorias[key]++;
+          else contadorCategorias.OTRO++;
+        });
+      });
+
+      return contadorCategorias;
+    }
+
+    // Canvas para poner el gráfico de barras
+    const canvas = document.getElementById('myPieChart');
+
+    map.on('load', () => {
+      const contadorCategorias = bajarDatos();
+
+      const infoContainer = document.getElementById('infoContainer');
+      infoContainer.innerHTML = `Total: ${contadorCategorias.total()}`;
+
+      const dataBarras = {
+        labels: ['SOCIEDAD', 'SUELO', 'AGUA', 'BIODIVERSIDAD', 'AIRE' /*, 'OTRO'*/],
+        datasets: [{
+          label: `Total: ${contadorCategorias.total()}`,
+          data: [contadorCategorias.SOCIEDAD, contadorCategorias.SUELO, contadorCategorias.AGUA, contadorCategorias.BIODIVERSIDAD, contadorCategorias.AIRE],
+          backgroundColor: ['red', 'orange', 'blue', 'green', 'purple', 'grey'],
+        }]
+      };
+
+      const chart = new Chart(canvas, {
+        type: 'pie',
+        data: dataBarras,
+        options: {
+          reponsive: true,
+          animation: { animateScale: true },
+          plugins: {
+            legend: {
+              labels: {
+                usePointStyle: true,
+              },
+            },
+            tooltip: {
+              callbacks: {
+                label: function (context) {
+                  const percentage = Math.round((100 * context.parsed) / contadorCategorias.total());
+                  const cantidad = context.parsed;
+
+                  return `${percentage}% (${cantidad})`;
+                },
+              },
+            },
+          },
+        },
+      });
+    });
+    // End map.on(load)
+    
+    
+    // Descripción componente
+    // ----------------------------- //
+    const descripcion = (feature) => {
+      return (`
+            <h3>${feature.properties.title}</h3>
+            <h4>Descripcion:</h4>
+            <p>${feature.properties.Descripci}</p>
+            <h4>Localidad afectada:</h4>
+            <p>${feature.properties.Localidad}</p>
+            <h4>Afectacion</h4>
+            <p>${feature.properties.Afecta}</p>
+            <p>${feature.properties.Afectados}</p>
+            <h4>Estado del evento:</h4>
+            <p>${feature.properties.Estado}</p>
+        `)
+    }
+
+    // On click events
+    // Busca puntos en el lugar del mouse y renderiza su descripción
+    // ----------------------------- //
+    const onClick = (layer) => {
+      return ((event) => {
+        const features = map.queryRenderedFeatures(event.point, {
+          layers: [layer]
+        });
+        if (!features.length) return;
+
+        const feature = features[0];
+
+        const popup = new mapboxgl.Popup({ offset: [0, -5] })
+          .setLngLat(feature.geometry.coordinates)
+          .setHTML(descripcion(feature))
+          .addTo(map);
+      })
+    }
+
+    map.on('click', onClick('kobopoint'));
+    map.on('click', onClick('kobopoint (1)'));
+    map.on('click', onClick('kobopoint (2)'));
+    map.on('click', onClick('kobopoint (3)'));
+    map.on('click', onClick('kobopoint (4)'));
+
+
+    // Agrega los controles de navegación
+    map.addControl(new mapboxgl.NavigationControl());
+
+  </script>
+
+</html>
